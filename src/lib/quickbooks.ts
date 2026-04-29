@@ -6,26 +6,36 @@ export class QuickBooksClient {
   constructor(accessToken: string, realmId?: string) {
     this.accessToken = accessToken;
     this.realmId = realmId || process.env.QB_REALM_ID || '';
-    this.baseUrl = process.env.QB_SANDBOX_BASE_URL || 'https://sandbox-quickbooks.api.intuit.com';
+    this.baseUrl = 'https://sandbox-quickbooks.api.intuit.com';
   }
 
   private async query(entity: string, queryString?: string) {
     const sql = queryString || `select * from ${entity}`;
     const url = `${this.baseUrl}/v3/company/${this.realmId}/query?query=${encodeURIComponent(sql)}&minorversion=75`;
 
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/text',
-      },
-    });
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/text',
+        },
+        cache: 'no-store',
+      });
 
-    if (!response.ok) {
-      throw new Error(`QB API error: ${response.status} ${response.statusText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`QB API ${response.status}: ${errorText}`);
+      }
+
+      return response.json();
+    } catch (error: any) {
+      if (error.message?.includes('fetch failed')) {
+        throw new Error(`Cannot reach QuickBooks API. URL: ${url}. Original: ${error.message}`);
+      }
+      throw error;
     }
-
-    return response.json();
   }
 
   async getInvoices() {
@@ -59,6 +69,7 @@ export class QuickBooksClient {
         'Authorization': `Bearer ${this.accessToken}`,
         'Accept': 'application/json',
       },
+      cache: 'no-store',
     });
     return response.json();
   }
