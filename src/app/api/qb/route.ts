@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   if (!accessToken) {
     return NextResponse.json(
-      { error: 'No access token provided. Connect QuickBooks first.' },
+      { error: 'No access token. Click Connect QuickBooks first.', connected: false },
       { status: 401 }
     );
   }
@@ -49,8 +49,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
+    console.error('[QB API Error]', error.message, error.stack);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch QB data' },
+      { error: error.message || 'Failed to fetch QB data', details: String(error) },
       { status: 500 }
     );
   }

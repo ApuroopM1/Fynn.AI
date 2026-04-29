@@ -39,13 +39,13 @@ export async function GET(request: NextRequest) {
       );
       response.cookies.set('qb_access_token', tokens.access_token, {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         maxAge: tokens.expires_in || 3600,
         path: '/',
       });
       response.cookies.set('qb_realm_id', realmId, {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         maxAge: tokens.expires_in || 3600,
         path: '/',
       });
