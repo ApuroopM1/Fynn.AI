@@ -4,7 +4,7 @@ import { QuickBooksClient } from '@/lib/quickbooks';
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const type = searchParams.get('type') || 'invoices';
-  const accessToken = request.headers.get('x-qb-token');
+  const accessToken = request.cookies.get('qb_access_token')?.value;
 
   if (!accessToken) {
     return NextResponse.json(

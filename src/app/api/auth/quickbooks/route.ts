@@ -33,13 +33,23 @@ export async function GET(request: NextRequest) {
       const tokens = await tokenResponse.json();
 
       // Store tokens - for now, return them (later save to Supabase)
-      return NextResponse.json({
-        success: true,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        realm_id: realmId,
-        expires_in: tokens.expires_in,
+     // Redirect to dashboard with token stored in cookie
+      const response = NextResponse.redirect(
+        new URL('/dashboard', request.url)
+      );
+      response.cookies.set('qb_access_token', tokens.access_token, {
+        httpOnly: true,
+        secure: true,
+        maxAge: tokens.expires_in || 3600,
+        path: '/',
       });
+      response.cookies.set('qb_realm_id', realmId, {
+        httpOnly: true,
+        secure: true,
+        maxAge: tokens.expires_in || 3600,
+        path: '/',
+      });
+      return response;
     } catch (error) {
       return NextResponse.json(
         { error: 'Failed to exchange token' },
