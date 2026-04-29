@@ -1,4 +1,5 @@
 import { KpiStrip } from "@/components/dashboard/kpi-strip";
+import { QBSummary } from "@/components/dashboard/qb-summary";
 import Link from "next/link";
 import {
   Upload,
@@ -53,6 +54,7 @@ export default function DashboardPage() {
       </div>
 
       <KpiStrip />
+      <QBSummary />
 
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 mb-4">
