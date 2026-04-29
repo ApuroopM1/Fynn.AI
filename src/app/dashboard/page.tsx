@@ -5,9 +5,17 @@ import {
   SearchX,
   MailCheck,
   FileText,
+  Link2,
 } from "lucide-react";
 
-const quickActions = [
+  const quickActions = [
+  {
+    label: "Connect QuickBooks",
+    href: "/api/auth/quickbooks",
+    icon: Link2,
+    description: "Sync invoices & payments from QB",
+  },
+  
   {
     label: "Upload Bank Statement",
     href: "/dashboard/upload",
