@@ -3,6 +3,20 @@
 import { useState, useEffect } from "react";
 import { Link2, AlertTriangle, Users, FileText } from "lucide-react";
 
+const USD_TO_INR = 83.5;
+
+function toInr(usd: number) {
+  return Math.round(usd * USD_TO_INR * 100) / 100;
+}
+
+function fmtInr(amount: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+  }).format(amount);
+}
+
 interface QBData {
   invoices: any[];
   customers: any[];
@@ -63,7 +77,7 @@ export function QBSummary() {
             {data.invoices.length}
           </p>
           <p className="text-sm text-zinc-500">
-            ${totalAR.toFixed(2)} total AR
+            {fmtInr(toInr(totalAR))} total AR
           </p>
         </div>
 
@@ -76,7 +90,7 @@ export function QBSummary() {
             {overdueCount}
           </p>
           <p className="text-sm text-zinc-500">
-            ${overdueAmount.toFixed(2)} at risk
+            {fmtInr(toInr(overdueAmount))} at risk
           </p>
         </div>
 
@@ -107,7 +121,7 @@ export function QBSummary() {
                   {inv.CustomerRef?.name || "Unknown"} — #{inv.DocNumber}
                 </span>
                 <span className="font-medium text-red-600">
-                  ${inv.Balance?.toFixed(2)}
+                  {fmtInr(toInr(inv.Balance || 0))}
                 </span>
               </div>
             ))}

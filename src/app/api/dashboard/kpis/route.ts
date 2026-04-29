@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { QuickBooksClient } from "@/lib/quickbooks";
 
+const USD_TO_INR = 83.5;
+
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -99,30 +101,31 @@ export async function GET(request: NextRequest) {
 
         qbConnected = true;
 
-        // Add QB invoice balances to cash position (money owed to you)
+        // Add QB invoice balances to cash position (converted to INR)
         const qbTotalAR = qbInvoices.reduce(
           (sum: number, inv: any) => sum + (inv.Balance || 0),
           0
         );
-        cashPosition += qbTotalAR;
+        cashPosition += qbTotalAR * USD_TO_INR;
 
-        // Add QB payments to recovered
+        // Add QB payments to recovered (converted to INR)
         const qbTotalPaid = qbPayments.reduce(
           (sum: number, p: any) => sum + (p.TotalAmt || 0),
           0
         );
-        totalRecovered += qbTotalPaid;
+        totalRecovered += qbTotalPaid * USD_TO_INR;
 
-        // Recalculate tax reserve with QB data included
+        // Recalculate tax reserve with QB data included (converted to INR)
         const qbRevenue = qbInvoices.reduce(
           (sum: number, inv: any) => sum + (inv.TotalAmt || 0),
           0
         );
-        taxReserve = (netIncome + qbRevenue) > 0
-          ? (netIncome + qbRevenue) * 0.25
+        const qbRevenueInr = qbRevenue * USD_TO_INR;
+        taxReserve = (netIncome + qbRevenueInr) > 0
+          ? (netIncome + qbRevenueInr) * 0.25
           : taxReserve;
 
-        // Add overdue QB invoices to leakage
+        // Add overdue QB invoices to leakage (converted to INR)
         const today = new Date().toISOString().split("T")[0];
         const qbOverdue = qbInvoices.filter(
           (inv: any) => inv.DueDate < today && inv.Balance > 0
@@ -131,11 +134,10 @@ export async function GET(request: NextRequest) {
           (sum: number, inv: any) => sum + (inv.Balance || 0),
           0
         );
-        totalLeakage += qbOverdueAmount;
+        totalLeakage += qbOverdueAmount * USD_TO_INR;
 
       } catch (qbError) {
         console.error("[kpis] QB data fetch failed:", qbError);
-        // Continue with Supabase data only
       }
     }
 
